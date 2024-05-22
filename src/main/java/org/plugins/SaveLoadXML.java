@@ -13,6 +13,16 @@ import org.w3c.dom.NodeList;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Map;
 import java.util.Objects;
 
 
@@ -21,6 +31,7 @@ public class SaveLoadXML implements Save, Load {
     private Element player1 = null;
     private Element player2 = null;
     private String folderName = "";
+    private Document newDocs = null;
 
     public SaveLoadXML(String folderName) {
         try {
@@ -31,10 +42,13 @@ public class SaveLoadXML implements Save, Load {
             DocumentBuilder builder = factory.newDocumentBuilder();
 
             // Parse the XML file and get the document
-            Document document = builder.parse("src/main/java/org/plugins/" + folderName + "/state.xml");
+            Document document = builder.parse(new File("src/main/java/org/plugins/" + folderName + "/state.xml"));
 
             // Normalize the XML structure
             document.getDocumentElement().normalize();
+
+            // Create new document to write
+            this.newDocs = builder.newDocument();
 
             // Get the root element
             Element root = document.getDocumentElement();
@@ -72,6 +86,15 @@ public class SaveLoadXML implements Save, Load {
             GameData.initCards();
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
+            try {
+                DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+                DocumentBuilder builder = factory.newDocumentBuilder();
+                this.newDocs = builder.newDocument();
+                this.folderName = folderName;
+                handleNewFile(Paths.get("src/main/java/org/plugins/" + folderName + "/state.xml"));
+            } catch (Exception e1) {
+                System.out.println("Error inside: " + e1.getMessage());
+            }
         }
     }
 
@@ -233,7 +256,188 @@ public class SaveLoadXML implements Save, Load {
     }
 
     public void save() {
-        // TODO: IMPLEMENT SAVE TO XML
+        try {
+             /* Create root element */
+            Element root = newDocs.createElement("game");
+            newDocs.appendChild(root);
+
+            /* Game State Element */
+            Element gameState = newDocs.createElement("gameState");
+
+            // Append Current Player
+            gameState
+                    .appendChild(newDocs.createElement("currentPlayer"))
+                    .appendChild(newDocs.createTextNode(String.valueOf(GameState.getInstance().getCurrentPlayer())));
+
+            // Append Items
+            Element items = newDocs.createElement("items");
+            items.setAttribute("count", String.valueOf(GameState.getInstance().getCountItems()));
+            for (Map.Entry<ProductCard, Integer> i : GameState.getInstance().getShopItems().entrySet()) {
+                if (i.getValue().equals(0)) continue;
+
+                ProductCard card = i.getKey();
+                Element item = newDocs.createElement("item");
+                item
+                        .appendChild(newDocs.createElement("count"))
+                        .appendChild(newDocs.createTextNode(String.valueOf(i.getValue())));
+                item
+                        .appendChild(newDocs.createElement("name"))
+                        .appendChild(newDocs.createTextNode(card.getName()));
+                items.appendChild(item);
+            }
+            gameState.appendChild(items);
+
+
+            /* Player1 Element */
+            Element player1 = newDocs.createElement("player1");
+
+            Player p1 = GameState.getInstance().getPlayer(1);
+
+            // Append Gulden
+            player1
+                    .appendChild(newDocs.createElement("gulden"))
+                    .appendChild(newDocs.createTextNode(String.valueOf(p1.getJumlahGulden())));
+
+            // Append Deck Count
+            player1
+                    .appendChild(newDocs.createElement("deckCount"))
+                    .appendChild(newDocs.createTextNode(String.valueOf(p1.getDeck().getCardsInDeckCount())));
+
+            // Append Hand
+            Element hand = newDocs.createElement("hand");
+            Deck deck = p1.getDeck();
+            setHand(player1, hand, deck);
+
+            // Append Ladang
+            Element ladangElement = newDocs.createElement("ladang");
+            Ladang ladang = p1.getLadang();
+            ladangElement.setAttribute("count", String.valueOf(ladang.getCardinLadangCount()));
+            Map<String, FarmResourceCard> cardInLadang = ladang.getAllCardwithLocationinLadang();
+            setItemLadang(ladangElement, cardInLadang);
+            player1.appendChild(ladangElement);
+
+
+            /* Player2 Element */
+            Element player2 = newDocs.createElement("player2");
+
+            Player p2 = GameState.getInstance().getPlayer(2);
+
+            // Append Gulden
+            player2
+                    .appendChild(newDocs.createElement("gulden"))
+                    .appendChild(newDocs.createTextNode(String.valueOf(p2.getJumlahGulden())));
+
+            // Append Deck Count
+            player2
+                    .appendChild(newDocs.createElement("deckCount"))
+                    .appendChild(newDocs.createTextNode(String.valueOf(p2.getDeck().getCardsInDeckCount())));
+
+            // Append Hand
+            hand = newDocs.createElement("hand");
+            deck = p2.getDeck();
+            setHand(player2, hand, deck);
+
+            // Append Ladang
+            ladangElement = newDocs.createElement("ladang");
+            ladang = p2.getLadang();
+            ladangElement.setAttribute("count", String.valueOf(ladang.getCardinLadangCount()));
+            cardInLadang = ladang.getAllCardwithLocationinLadang();
+            setItemLadang(ladangElement, cardInLadang);
+            player2.appendChild(ladangElement);
+
+
+            // Save All
+            root.appendChild(gameState);
+            root.appendChild(player1);
+            root.appendChild(player2);
+
+            // Write to XML File
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            Transformer transformer = transformerFactory.newTransformer();
+            DOMSource source = new DOMSource(newDocs);
+
+            // Specify the file path
+            StreamResult filePath = new StreamResult(handleNewFile(Paths.get("src/main/java/org/plugins/" + folderName + "/state.xml")));
+            transformer.transform(source, filePath);
+
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+
+    private void setHand(Element player1, Element hand, Deck deck) {
+        hand.setAttribute("count", String.valueOf(deck.getActiveCardinHandCount()));
+        for (int i=0; i < deck.getActiveCardinHandCount(); i++) {
+            Element cardElement = newDocs.createElement("card");
+            cardElement
+                    .appendChild(newDocs.createElement("lokasi"))
+                    .appendChild(newDocs.createTextNode( (char) ('A' + i) + "01" ));
+            cardElement
+                    .appendChild(newDocs.createElement("name"))
+                    .appendChild(newDocs.createTextNode(deck.getActiveCards()[i].getName()));
+            hand.appendChild(cardElement);
+        }
+        player1.appendChild(hand);
+    }
+
+    private void setItemLadang(Element ladangElement, Map<String, FarmResourceCard> cardInLadang) {
+        for(Map.Entry<String, FarmResourceCard> entry : cardInLadang.entrySet()) {
+            FarmResourceCard card = entry.getValue();
+            Element item = newDocs.createElement("item");
+            item
+                    .appendChild(newDocs.createElement("name"))
+                    .appendChild(newDocs.createTextNode(card.getName()));
+            item
+                    .appendChild(newDocs.createElement("lokasi"))
+                    .appendChild(newDocs.createTextNode(entry.getKey()));
+
+            int ageOrWeight = 0;
+            if (card instanceof PlantCard) {
+                ageOrWeight = ((PlantCard) card).getAge();
+            } else if (card instanceof AnimalCard) {
+                ageOrWeight = ((AnimalCard) card).getWeight();
+            }
+            item
+                    .appendChild(newDocs.createElement("ageOrWeight"))
+                    .appendChild(newDocs.createTextNode(String.valueOf(ageOrWeight)));
+
+            Element effects = newDocs.createElement("effects");
+            effects.setAttribute("count", String.valueOf(card.getEffect().size()));
+            for (EffectType effect : card.getEffect()) {
+                effects
+                        .appendChild(newDocs.createElement("effect"))
+                        .appendChild(newDocs.createTextNode(effect.toString()));
+            }
+            item.appendChild(effects);
+
+            ladangElement.appendChild(item);
+        }
+    }
+
+    private File handleNewFile(Path path){
+        File file = null;
+        try {
+            // if folder does not exist, create new file
+            Files.createDirectories(path.getParent());
+
+            file = new File(path.toString());
+            if (!file.exists()) {
+                // if file does not exist, create new file
+                if (file.createNewFile()) {
+                    System.out.println("File created: " + file.getName());
+                } else {
+                    System.out.println("File creating failed.");
+                }
+            } else {
+                System.out.println("File " + file.getName() + " already exists.");
+                System.out.println("Save will overwrite the file.");
+            }
+        } catch (IOException e) {
+            System.out.println("Error: " + e.getMessage());
+        } finally {
+            System.out.println();
+        }
+        return file;
     }
 }
 

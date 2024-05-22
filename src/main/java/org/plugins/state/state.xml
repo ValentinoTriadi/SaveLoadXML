@@ -12,8 +12,7 @@
         </hand>
         <ladang count="1">
             <item>
-                <effects count="1">
-                    <effect>ACCELERATE</effect>
+                <effects count="0">
                 </effects>
                 <lokasi>B02</lokasi>
                 <name>AYAM</name>

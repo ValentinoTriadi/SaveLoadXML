@@ -7,6 +7,7 @@ public class Main {
         saveLoadXML.loadPlayer(1);
         saveLoadXML.loadPlayer(2);
 
-
+        saveLoadXML = new SaveLoadXML("SAVE");
+        saveLoadXML.save();
     }
 }
