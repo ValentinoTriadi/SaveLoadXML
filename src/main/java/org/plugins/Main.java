@@ -6,5 +6,7 @@ public class Main {
         saveLoadXML.loadGameState();
         saveLoadXML.loadPlayer(1);
         saveLoadXML.loadPlayer(2);
+
+
     }
 }

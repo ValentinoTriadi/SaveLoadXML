@@ -224,6 +224,7 @@ public class SaveLoadXML implements Save, Load {
                 }
             }
         }
+        GameState.getInstance().setShop(shop);
 
         // Parse currentPlayer
         int currentPlayer = Integer.parseInt(gameStateElement.getElementsByTagName("currentPlayer").item(0).getTextContent());
