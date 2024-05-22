@@ -1,0 +1,73 @@
+<game>
+    <player2>
+        <hand count="2">
+            <card>
+                <lokasi>A01</lokasi>
+                <name>BERUANG</name>
+            </card>
+            <card>
+                <lokasi>B01</lokasi>
+                <name>BERUANG</name>
+            </card>
+        </hand>
+        <ladang count="1">
+            <item>
+                <effects count="1">
+                    <effect>ACCELERATE</effect>
+                </effects>
+                <lokasi>B02</lokasi>
+                <name>AYAM</name>
+                <ageOrWeight>0</ageOrWeight>
+            </item>
+        </ladang>
+        <gulden>300</gulden>
+        <deckCount>38</deckCount>
+    </player2>
+    <player1>
+        <hand count="1">
+            <card>
+                <lokasi>A01</lokasi>
+                <name>BERUANG</name>
+            </card>
+        </hand>
+        <ladang count="1">
+            <item>
+                <effects count="3">
+                    <effect>ACCELERATE</effect>
+                    <effect>DELAY</effect>
+                    <effect>PROTECT</effect>
+                </effects>
+                <lokasi>A01</lokasi>
+                <name>DOMBA</name>
+                <ageOrWeight>5</ageOrWeight>
+            </item>
+        </ladang>
+        <gulden>500</gulden>
+        <deckCount>39</deckCount>
+    </player1>
+    <gameState>
+        <items count="5">
+            <item>
+                <count>1</count>
+                <name>DAGING_BERUANG</name>
+            </item>
+            <item>
+                <count>3</count>
+                <name>DAGING_DOMBA</name>
+            </item>
+            <item>
+                <count>2</count>
+                <name>SUSU</name>
+            </item>
+            <item>
+                <count>5</count>
+                <name>SIRIP_HIU</name>
+            </item>
+            <item>
+                <count>10</count>
+                <name>DAGING_KUDA</name>
+            </item>
+        </items>
+        <currentPlayer>1</currentPlayer>
+    </gameState>
+</game>
