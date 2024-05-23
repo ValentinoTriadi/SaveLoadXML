@@ -55,7 +55,10 @@ public class SaveLoadXML implements SaveLoad {
             DocumentBuilder builder = factory.newDocumentBuilder();
 
             // Parse the XML file and get the document
-            Document document = builder.parse(new File("src/main/resources/oop/if2210_tb2_sc4/save_load/" + folderName + "/state.xml"));
+            URL url = SaveLoad.class.getResource("");
+            assert url != null;
+            String cwd = url.getPath().startsWith("/") ? url.getPath().substring(1) : url.getPath();
+            Document document = builder.parse(new File(cwd + folderName + "/state.xml"));
 
             // Normalize the XML structure
             document.getDocumentElement().normalize();
@@ -104,7 +107,11 @@ public class SaveLoadXML implements SaveLoad {
                 DocumentBuilder builder = factory.newDocumentBuilder();
                 this.newDocs = builder.newDocument();
                 this.folderName = folderName;
-                handleNewFile(Paths.get("src/main/resources/oop/if2210_tb2_sc4/save_load/" + folderName + "/state.xml"));
+
+                URL url = SaveLoad.class.getResource("");
+                assert url != null;
+                String cwd = url.getPath().startsWith("/") ? url.getPath().substring(1) : url.getPath();
+                handleNewFile(Paths.get(cwd + folderName + "/state.xml"));
             } catch (Exception e1) {
                 System.out.println("Error inside: " + e1.getMessage());
             }
