@@ -19,6 +19,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -357,7 +358,10 @@ public class SaveLoadXML implements Save, Load {
             DOMSource source = new DOMSource(newDocs);
 
             // Specify the file path
-            StreamResult filePath = new StreamResult(handleNewFile(Paths.get("src/main/java/org/plugins/" + folderName + "/state.xml")));
+            URL url = this.getClass().getResource("");
+            assert url != null;
+            String cwd = url.getPath().startsWith("/") ? url.getPath().substring(1) : url.getPath();
+            StreamResult filePath = new StreamResult(handleNewFile(Paths.get(cwd + folderName + "/state.xml")));
             transformer.transform(source, filePath);
 
         } catch (Exception e) {
