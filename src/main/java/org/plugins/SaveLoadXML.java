@@ -39,7 +39,6 @@ public class SaveLoadXML implements SaveLoad {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
             this.newDocs = builder.newDocument();
-
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
         }
@@ -381,9 +380,10 @@ public class SaveLoadXML implements SaveLoad {
             DOMSource source = new DOMSource(newDocs);
 
             // Specify the file path
-            URL url = this.getClass().getResource("");
+            URL url = SaveLoad.class.getResource("");
             assert url != null;
             String cwd = url.getPath().startsWith("/") ? url.getPath().substring(1) : url.getPath();
+            System.out.println(cwd + folderName);
             StreamResult filePath = new StreamResult(handleNewFile(Paths.get(cwd + folderName + "/state.xml")));
             transformer.transform(source, filePath);
 
